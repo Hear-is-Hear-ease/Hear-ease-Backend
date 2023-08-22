@@ -13,10 +13,10 @@ os.environ['NUMBA_DISABLE_JIT'] = "1"
 
 app = FastAPI()
 model = tf.keras.models.load_model(
-    '/Users/jaewone/developer/tensorflow/baby-cry-classification/resnet_v3.h5')
+    '/Users/jaewone/developer/tensorflow/baby-cry-classification/model/resnet_v3.h5')
 
 
-def get_input_vector_from_uploadfile(byteFile) -> np.ndarray:
+async def get_input_vector_from_uploadfile(byteFile) -> np.ndarray:
     y, sr = librosa.load(BytesIO(byteFile), sr=16000)
     mel_spec = librosa.feature.melspectrogram(
         y=y, sr=sr, n_mels=128, n_fft=2048, hop_length=501)
@@ -28,10 +28,10 @@ def get_input_vector_from_uploadfile(byteFile) -> np.ndarray:
     return mel_spec_dB_stacked[np.newaxis, ]
 
 
-def get_predict_class(test_vector):
+async def get_predict_class(input_vector):
     classes = ['sad', 'hug', 'diaper', 'hungry',
                'sleepy', 'awake', 'uncomfortable']
-    predictions = model.predict(test_vector)[0]
+    predictions = model.predict(input_vector)[0]
     return classes[np.argmax(predictions)]
 # test_vector = get_input_vector_from_file('/Users/jaewone/developer/tensorflow/baby-cry-classification/data/diaper/diaper_18.wav')
 
@@ -49,7 +49,8 @@ async def upload_file(file: UploadFile = None):
 
     if file.filename.endswith(".wav"):
         content = await file.read()
-        state = await get_input_vector_from_uploadfile(content)
+        input_vector = await get_input_vector_from_uploadfile(content)
+        state = await get_predict_class(input_vector)
         return JSONResponse(content={"filename": file.filename, state: state})
     else:
         raise HTTPException(status_code=HTTP_400_BAD_REQUEST,
