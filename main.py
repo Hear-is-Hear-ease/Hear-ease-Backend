@@ -12,12 +12,14 @@ from skimage.transform import resize
 os.environ['NUMBA_DISABLE_JIT'] = "1"
 
 app = FastAPI()
-model = tf.keras.models.load_model(
-    '/Users/jaewone/developer/tensorflow/baby-cry-classification/model/resnet_v3.h5')
+model = tf.keras.models.load_model(os.path.join(os.getcwd(), 'resnet_v3.h5'))
 
 
 async def get_input_vector_from_uploadfile(byteFile) -> np.ndarray:
     y, sr = librosa.load(BytesIO(byteFile), sr=16000)
+
+    y = y[:(2 * sr)]
+
     mel_spec = librosa.feature.melspectrogram(
         y=y, sr=sr, n_mels=128, n_fft=2048, hop_length=501)
     mel_spec_dB = librosa.power_to_db(mel_spec, ref=np.max)
@@ -32,13 +34,10 @@ async def get_predict_class(input_vector):
     classes = ['sad', 'hug', 'diaper', 'hungry',
                'sleepy', 'awake', 'uncomfortable']
     predictions = model.predict(input_vector)[0]
-    return classes[np.argmax(predictions)]
-# test_vector = get_input_vector_from_file('/Users/jaewone/developer/tensorflow/baby-cry-classification/data/diaper/diaper_18.wav')
-
-
-@app.get("/")
-def 이름():
-    return '보낼 값'
+    predictMap = {}
+    for i in range(len(classes)):
+        predictMap[classes[i]] = float(predictions[i])
+    return predictMap
 
 
 @app.post("/")
@@ -48,13 +47,19 @@ async def upload_file(file: UploadFile = None):
                             detail="File not provided")
 
     if file.filename.endswith(".wav"):
+        print(f"Get file: {file.filename}")
         content = await file.read()
         input_vector = await get_input_vector_from_uploadfile(content)
-        state = await get_predict_class(input_vector)
-        return JSONResponse(content={"filename": file.filename, state: state})
+        stateMap = await get_predict_class(input_vector)
+
+        print(f'response state:')
+        for key in stateMap:
+            print(f'{key}: {stateMap[key]}')
+
+        return JSONResponse(content={"filename": file.filename, 'stateMap': stateMap})
     else:
         raise HTTPException(status_code=HTTP_400_BAD_REQUEST,
                             detail="Only .wav files are accepted")
 
 
-# uvicorn main:app --reload
+# uvicorn main:app --host 0.0.0.0 --port 7701
