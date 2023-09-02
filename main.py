@@ -12,7 +12,7 @@ from skimage.transform import resize
 os.environ['NUMBA_DISABLE_JIT'] = "1"
 
 app = FastAPI()
-model = tf.keras.models.load_model(os.path.join(os.getcwd(), 'resnet_v5.h5'))
+model = tf.keras.models.load_model(os.path.join(os.getcwd(), 'resnet.h5'))
 
 
 async def get_input_vector_from_uploadfile(byteFile) -> np.ndarray:
