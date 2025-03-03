@@ -17,10 +17,6 @@
 
 <br>
 
-Hear-is Hear-ease 백엔드.
-
-청각장애 부모를 위해 아이의 울음을 감지하고 원인을 파악하는 서비스의 백엔드.
-
 FastAPI로 구성되어 있으며 '/' 주소로 Post 방식으로 wav 파일과 함께 요청이 들어올 시 아기울음 소리 범주에 따른 확률값을 JSON 형태로 반환한다.
 
 아기울음 소리 원인은 'sad', 'hug', 'diaper', 'hungry', 'sleepy', 'awake', 'uncomfortable', 총 7가지로 분류한다.
