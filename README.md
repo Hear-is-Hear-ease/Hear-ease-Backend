@@ -1,5 +1,7 @@
 ## 청각장애인 부모를 위한 아기 울음소리 감지 및 범주 분류
 
+[Hear-is, Hear-ease](https://github.com/Hear-is-Hear-ease/.github)의 백엔드 레포지토리.
+
 ### Hear-is Hear-ease 백엔드.
 
 - 소속: 서울과학기술대학교 데이터청년 캠퍼스 01조
